@@ -1,0 +1,84 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class GridEnvironmentGUI extends JFrame {
+    private GridEnvironment env;
+    private JLabel[][] labels;
+
+    public GridEnvironmentGUI(GridEnvironment env) {
+        this.env = env;
+        setTitle("Grid Environment");
+        setSize(600, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        int numRows = env.grid.length;
+        int numCols = env.grid[0].length;
+
+        JPanel gridPanel = new JPanel(new GridLayout(numRows, numCols));
+        labels = new JLabel[numRows][numCols];
+
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                labels[i][j] = new JLabel();
+                updateCell(i, j);
+                gridPanel.add(labels[i][j]);
+            }
+        }
+
+        getContentPane().add(gridPanel);
+        setVisible(true);
+    }
+
+    private void updateCell(int row, int col) {
+        if (env.state[0] == row && env.state[1] == col) {
+            labels[row][col].setText("A");
+            labels[row][col].setForeground(Color.RED);
+        } else if (env.grid[row][col] == 0) {
+            labels[row][col].setText("#");
+            labels[row][col].setForeground(Color.BLACK);
+        } else {
+            labels[row][col].setText(".");
+            labels[row][col].setForeground(Color.BLACK);
+        }
+        labels[row][col].setHorizontalAlignment(JLabel.CENTER);
+        labels[row][col].setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    }
+
+    public void updateGrid() {
+        for (int i = 0; i < env.grid.length; i++) {
+            for (int j = 0; j < env.grid[i].length; j++) {
+                updateCell(i, j);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        int[][] grid = {
+                {1, 1, 1, 1, 1},
+                {1, 0, 1, 0, 1},
+                {1, 1, 1, 1, 1},
+                {1, 0, 0, 0, 1},
+                {1, 1, 1, 1, 1}
+        };
+        GridEnvironment env = new GridEnvironment(grid);
+        GridEnvironmentGUI gui = new GridEnvironmentGUI(env);
+
+        // Display initial grid
+        env.displayGrid(env.state);
+
+        // Simulate agent movement
+        for (int i = 0; i < 10; i++) {
+            int[] action = env.actions[(int) (Math.random() * env.actions.length)];
+            int[] nextState = env.getNextState(env.state, action);
+            env.state = nextState;
+            env.displayGrid(env.state);
+            gui.updateGrid();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
